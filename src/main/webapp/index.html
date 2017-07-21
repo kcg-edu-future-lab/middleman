@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta encoding="utf-8">
+<style src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"></style>
+<style>
+#log {
+    padding:5px;
+    border:solid 1px #000;
+    width:460px;
+    height:150px;
+    overflow:auto;
+}
+</style>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+<body>
+<div class="container">
+  <form>
+    <div class="form-group row">
+      <label for="roomName" class="col-sm-2 col-form-label">room name</label>
+      <div class="col-sm-10">
+        <input type="text" class="form-control" id="roomName" value="krjdod4ii">
+      </div>
+    </div>
+    <div class="form-group row">
+      <label for="userName" class="col-sm-2 col-form-label">your name</label>
+      <div class="col-sm-10">
+        <input type="text" class="form-control" id="userName" placeholder="your name">
+      </div>
+    </div>
+    <div class="form-group row">
+      <label for="message" class="col-sm-2 col-form-label">message</label>
+      <div class="col-sm-10">
+        <input type="text" class="form-control" id="message" placeholder="enter to send">
+      </div>
+    </div>
+    <div class="form-group row">
+      <label for="log" class="col-sm-2 col-form-label">log</label>
+      <div class="col-sm-10">
+        <div id="log"></textarea>
+      </div>
+    </div>
+  </form>
+</div>
+
+<script>
+$(function(){
+	var urlBase = 'ws://localhost:8080/middleman/rooms/';
+	var room = $("#roomName").val();
+	var ws = new WebSocket(urlBase + room);
+	ws.onmessage = function (e) {
+		$("#log").append(e.data + "<br />");
+		$("#log").scrollTop( $("#log")[0].scrollHeight);
+		console.log(e.data);
+	};
+	ws.onopen = function(){
+		ws.send("hello");
+	};
+	$("#message").keypress( function ( e ) {
+		if(e.which != 13) return true;
+		var curRoom = $("#roomName").val();
+		if(room != curRoom){
+			ws.close();
+			room = curRoom();
+			ws = new WebSocket(urlBase + room);
+		}
+		ws.send($("#userName").val() + ": " + $("#message").val());
+		$("#message").val("");
+		return false;
+	});
+});
+</script>
+</body>
+</html>
