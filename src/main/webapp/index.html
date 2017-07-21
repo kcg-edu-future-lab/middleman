@@ -51,9 +51,12 @@ body {
 
 <script>
 $(function(){
-	var urlBase = 'ws://localhost:8080/middleman/rooms/';
+	var baseUrl = (location.protocol == "http:" ? "ws:" : "wss:") +
+		location.hostname + ((location.port == "") ? "" : ":" + location.port) +
+		"/" + location.pathname.split("\/", 3)[1] +
+		"/rooms/";
 	var room = $("#roomName").val();
-	var ws = new WebSocket(urlBase + room);
+	var ws = new WebSocket(baseUrl + room);
 	ws.onmessage = function (e) {
 		$("#log").append(e.data + "<br />");
 		$("#log").scrollTop( $("#log")[0].scrollHeight);
