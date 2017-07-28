@@ -65,3 +65,6 @@ public class SimplePaintService extends DefaultService{
 DefaultServiceクラスは基本的なイベントハンドラ(onOpen,onClose,onMessage)を実装して，BroadCastRoomにイベントを通知するクラスです．
 これを継承してnewRoomメソッドをオーバーライドすると，内部で使用されるRoomクラスを変更できます．
 SimplePaintServiceでは，100件までのヒストリ付きの，かつブロードキャスト処理を実装したBroadCastWithHistoryRoomを作成しています(ヒストリの上限は100件)．
+
+通常はRoomクラスを拡張して使用すればRoomの振る舞いを拡張できますが，上記のコメント部分のようにOnMessage等のWebSocketアノテーションを使用すると，
+直接セッションに関連する処理を拡張することもできます．
