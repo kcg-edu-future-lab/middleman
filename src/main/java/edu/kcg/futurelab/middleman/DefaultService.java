@@ -28,7 +28,7 @@ import javax.websocket.server.ServerEndpoint;
 import edu.kcg.futurelab.middleman.room.BroadCastRoom;
 
 @ServerEndpoint("/default/{roomId}")
-public class DefaultServer {
+public class DefaultService {
 	@OnOpen
 	public void onOpen(Session session,
 			@PathParam("roomId") String roomId) {

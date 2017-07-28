@@ -17,12 +17,12 @@ package edu.kcg.futurelab.middleman.sample;
 
 import javax.websocket.server.ServerEndpoint;
 
-import edu.kcg.futurelab.middleman.DefaultServer;
+import edu.kcg.futurelab.middleman.DefaultService;
 import edu.kcg.futurelab.middleman.Room;
 import edu.kcg.futurelab.middleman.room.BroadCastWithHistoryRoom;
 
 @ServerEndpoint("/simplePaint/{roomId}")
-public class SimplePaintServer extends DefaultServer{
+public class SimplePaintService extends DefaultService{
 //	@OnMessage
 //	public void onMessage(Session session, @PathParam("roomId") String roomId, String text) {
 //		super.onMessage(session, roomId, text);
