@@ -41,3 +41,27 @@ middlemanは，サービス，ルーム，セッション(クライアントと�
 middleman上に複数のサービスがあり，サービスは複数のルームを持ち，ルームは複数のセッションを管理します．
 
 <img src="images/architecture.png" width="400">
+
+## サービスの開発
+
+JavaでWebSocketのサーバエンドポイントを実装すれば，新しいサービスを作ることができます．
+下記はサンプルとして含まれている共有キャンバス(SimplePaint)のサービスを実装したクラスです．
+
+```java
+@ServerEndpoint("/simplePaint/{roomId}")
+public class SimplePaintService extends DefaultService{
+//	@OnMessage
+//	public void onMessage(Session session, @PathParam("roomId") String roomId, String text) {
+//		super.onMessage(session, roomId, text);
+//	}
+
+	@Override
+	protected Room newRoom(String roomId) {
+		return new BroadCastWithHistoryRoom(100);
+	}
+}
+```
+
+DefaultServiceクラスは基本的なイベントハンドラ(onOpen,onClose,onMessage)を実装して，BroadCastRoomにイベントを通知するクラスです．
+これを継承してnewRoomメソッドをオーバーライドすると，内部で使用されるRoomクラスを変更できます．
+SimplePaintServiceでは，100件までのヒストリ付きの，かつブロードキャスト処理を実装したBroadCastWithHistoryRoomを作成しています(ヒストリの上限は100件)．
