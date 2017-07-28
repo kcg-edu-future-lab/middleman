@@ -13,32 +13,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.kcg.futurelab.middleman;
+package edu.kcg.futurelab.middleman.room;
 
 import java.io.IOException;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.Deque;
+import java.util.LinkedList;
 
 import javax.websocket.Session;
 
-public class DefaultSessionGroup implements SessionGroup{
+public class BroadCastWithHistoryRoom extends BroadCastRoom{
 	@Override
 	public synchronized void add(Session session) {
-		sessions.add(session);
-	}
-	@Override
-	public synchronized void remove(Session session) {
-		sessions.remove(session);
-	}
-	@Override
-	public synchronized void onMessage(Session sender, String message) {
-		for(Session s : sessions){
+		synchronized(session){
 			try {
-				s.getBasicRemote().sendText(message);
+				for(String m : log){
+					session.getBasicRemote().sendText(m);
+				}
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
+		super.add(session);
 	}
-	private Set<Session> sessions = new LinkedHashSet<>();
+
+	@Override
+	public synchronized void onMessage(Session sender, String message) {
+		if(log.size() == 100) log.pollFirst();
+		log.offerLast(message);
+		super.onMessage(sender, message);
+	}
+
+	private Deque<String> log = new LinkedList<>();
 }

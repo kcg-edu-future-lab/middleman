@@ -13,12 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.kcg.futurelab.middleman;
+package edu.kcg.futurelab.middleman.sample;
 
-import javax.websocket.Session;
+import javax.websocket.server.ServerEndpoint;
 
-public interface SessionGroup {
-	void add(Session session);
-	void remove(Session session);
-	void onMessage(Session sender, String message);
+import edu.kcg.futurelab.middleman.DefaultServer;
+import edu.kcg.futurelab.middleman.Room;
+import edu.kcg.futurelab.middleman.room.BroadCastWithHistoryRoom;
+
+@ServerEndpoint("/simplePaint/{roomId}")
+public class SimplePaintServer extends DefaultServer{
+//	@OnMessage
+//	public void onMessage(Session session, @PathParam("roomId") String roomId, String text) {
+//		super.onMessage(session, roomId, text);
+//	}
+
+	@Override
+	protected Room newRoom(String roomId) {
+		return new BroadCastWithHistoryRoom();
+	}
 }
