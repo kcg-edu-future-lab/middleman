@@ -30,6 +30,6 @@ public class SimplePaintServer extends DefaultServer{
 
 	@Override
 	protected Room newRoom(String roomId) {
-		return new BroadCastWithHistoryRoom();
+		return new BroadCastWithHistoryRoom(100);
 	}
 }

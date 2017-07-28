@@ -22,6 +22,13 @@ import java.util.LinkedList;
 import javax.websocket.Session;
 
 public class BroadCastWithHistoryRoom extends BroadCastRoom{
+	public BroadCastWithHistoryRoom() {
+	}
+
+	public BroadCastWithHistoryRoom(int historySize) {
+		this.historySize = historySize;
+	}
+
 	@Override
 	public synchronized void add(Session session) {
 		synchronized(session){
@@ -38,10 +45,11 @@ public class BroadCastWithHistoryRoom extends BroadCastRoom{
 
 	@Override
 	public synchronized void onMessage(Session sender, String message) {
-		if(log.size() == 100) log.pollFirst();
+		if(log.size() == historySize) log.pollFirst();
 		log.offerLast(message);
 		super.onMessage(sender, message);
 	}
 
 	private Deque<String> log = new LinkedList<>();
+	private int historySize = 100;
 }
