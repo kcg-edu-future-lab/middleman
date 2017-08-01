@@ -36,13 +36,14 @@ public class DefaultService {
 	}
 
 	@OnClose
-	public void onClose(Session session, @PathParam("roomId") String roomName) {
-		getRoom(roomName).remove(session);
+	public void onClose(Session session, @PathParam("roomId") String roomId) {
+		getRoom(roomId).remove(session);
 	}
 
 	@OnMessage
-	public void onMessage(Session session, @PathParam("roomId") String roomName, String text) {
-		getRoom(roomName).onMessage(session, text);
+	public void onMessage(Session session, @PathParam("roomId") String roomId,
+			String message) {
+		getRoom(roomId).onMessage(session, message);
 	}
 
 	protected Room getRoom(String roomId){
