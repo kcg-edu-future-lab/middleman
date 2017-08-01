@@ -25,6 +25,14 @@ import edu.kcg.futurelab.middleman.Room;
 
 public class BroadCastRoom implements Room{
 	@Override
+	public boolean canRemove() {
+		return true;
+	}
+	@Override
+	public int getSessionCount() {
+		return sessions.size();
+	}
+	@Override
 	public synchronized void add(Session session) {
 		sessions.add(session);
 	}

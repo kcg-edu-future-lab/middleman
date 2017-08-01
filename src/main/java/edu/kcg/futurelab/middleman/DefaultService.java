@@ -38,6 +38,10 @@ public class DefaultService {
 	@OnClose
 	public void onClose(Session session, @PathParam("roomId") String roomId) {
 		getRoom(roomId).remove(session);
+		groups.compute(roomId, (key, cur) -> {
+			if(cur.canRemove()) return null;
+			return cur;
+		});
 	}
 
 	@OnMessage

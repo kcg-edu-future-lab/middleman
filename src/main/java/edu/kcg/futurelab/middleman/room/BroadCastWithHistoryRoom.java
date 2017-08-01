@@ -30,6 +30,11 @@ public class BroadCastWithHistoryRoom extends BroadCastRoom{
 	}
 
 	@Override
+	public boolean canRemove(){
+		return false;
+	}
+
+	@Override
 	public synchronized void add(Session session) {
 		try {
 			for(String m : log){
