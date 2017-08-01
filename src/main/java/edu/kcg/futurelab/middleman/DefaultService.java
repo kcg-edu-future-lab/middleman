@@ -39,7 +39,7 @@ public class DefaultService {
 	public void onClose(Session session, @PathParam("roomId") String roomId) {
 		getRoom(roomId).remove(session);
 		groups.compute(roomId, (key, cur) -> {
-			if(cur.canRemove()) return null;
+			if(cur.getSessionCount() == 0 && cur.canRemove()) return null;
 			return cur;
 		});
 	}
