@@ -31,14 +31,12 @@ public class BroadCastWithHistoryRoom extends BroadCastRoom{
 
 	@Override
 	public synchronized void add(Session session) {
-		synchronized(session){
-			try {
-				for(String m : log){
-					session.getBasicRemote().sendText(m);
-				}
-			} catch (IOException e) {
-				e.printStackTrace();
+		try {
+			for(String m : log){
+				session.getBasicRemote().sendText(m);
 			}
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 		super.add(session);
 	}
