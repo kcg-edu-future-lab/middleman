@@ -51,12 +51,11 @@ body {
 
 <script>
 $(function(){
-	var baseUrl = (location.protocol == "http:" ? "ws:" : "wss:") +
-		location.hostname + ((location.port == "") ? "" : ":" + location.port) +
-		"/" + location.pathname.split("\/", 3)[1] +
-		"/default/";
+	var p = location.href.split("\/", 5);
+	var contextUrl = (p[0] == "http:" ? "ws:" : "wss:") + "//" + p[2] + "/" + p[3];
+	var service = "default";
 	var room = $("#roomId").val();
-	var ws = new WebSocket(baseUrl + room);
+	var ws = new WebSocket(contextUrl + "/" + service + "/" + room);
 	ws.onmessage = function (e) {
 		$("#log").append(e.data + "<br />");
 		$("#log").scrollTop( $("#log")[0].scrollHeight);

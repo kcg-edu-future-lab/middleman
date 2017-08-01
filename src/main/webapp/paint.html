@@ -28,12 +28,12 @@ body {
 
 <script>
 $(function(){
-	var baseUrl = (location.protocol == "http:" ? "ws:" : "wss:") +
-		location.hostname + ((location.port == "") ? "" : ":" + location.port) +
-		"/" + location.pathname.split("\/", 3)[1] +
-		"/simplePaint/2oir094";
+	var p = location.href.split("\/", 5);
+	var contextUrl = (p[0] == "http:" ? "ws:" : "wss:") + "//" + p[2] + "/" + p[3];
+	var service = "simplePaint";
+	var room = "2oir094";
+	var ws = new WebSocket(contextUrl + "/" + service + "/" + room);
 	var context = $("#canvas")[0].getContext('2d');
-	var ws = new WebSocket(baseUrl);
 	ws.onopen = function(){
 	};
 	ws.onmessage = function (e) {
