@@ -21,6 +21,7 @@ body {
 </style>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<script src="middleman.js"></script>
 </head>
 <body>
 
@@ -28,11 +29,9 @@ body {
 
 <script>
 $(function(){
-	var p = location.href.split("\/", 5);
-	var contextUrl = (p[0] == "http:" ? "ws:" : "wss:") + "//" + p[2] + "/" + p[3];
 	var service = "simplePaint";
 	var room = "2oir094";
-	var ws = new WebSocket(contextUrl + "/" + service + "/" + room);
+	var ws = Middleman.connect(service, room);
 	var context = $("#canvas")[0].getContext('2d');
 	ws.onopen = function(){
 	};

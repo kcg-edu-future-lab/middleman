@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta encoding="utf-8">
+<link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<style>
+body {
+  padding-top: 40px;
+  padding-bottom: 30px;
+}
+#log {
+    padding:5px;
+    border:solid 1px #000;
+    width:780px;
+    height:400px;
+    overflow:auto;
+}
+</style>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<script src="middleman.js"></script>
+</head>
+<body>
+<div class="container">
+  <form>
+    <div class="form-group row">
+      <label for="userName" class="col-sm-2 col-form-label">your name</label>
+      <div class="col-sm-10">
+        <input type="text" class="form-control" id="userName" placeholder="your name">
+      </div>
+    </div>
+    <div class="form-group row">
+      <label for="message" class="col-sm-2 col-form-label">message</label>
+      <div class="col-sm-10">
+        <input type="text" class="form-control" id="message" placeholder="enter to send">
+      </div>
+    </div>
+    <div class="form-group row">
+      <label for="log" class="col-sm-2 col-form-label">log</label>
+      <div class="col-sm-10">
+        <div id="log" class="form-control"></textarea>
+      </div>
+    </div>
+  </form>
+</div>
+
+<script>
+$(function(){
+	var ws = Middleman.connect("simpleChat", "0000");
+	ws.onmessage = function (e) {
+		$("#log").append(e.data + "<br />");
+		$("#log").scrollTop( $("#log")[0].scrollHeight);
+		console.log(e.data);
+	};
+	ws.onopen = function(){
+	};
+	$("#message").keypress( function ( e ) {
+		if(e.which != 13) return true;
+		ws.send($("#userName").val() + ": " + $("#message").val());
+		$("#message").val("");
+		return false;
+	});
+});
+</script>
+</body>
+</html>
