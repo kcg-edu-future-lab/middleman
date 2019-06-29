@@ -23,11 +23,6 @@ import edu.kcg.futurelab.middleman.room.BroadCastWithHistoryRoom;
 
 @ServerEndpoint("/simplePaint/{roomId}")
 public class SimplePaintService extends DefaultService{
-//	@OnMessage
-//	public void onMessage(Session session, @PathParam("roomId") String roomId, String text) {
-//		super.onMessage(session, roomId, text);
-//	}
-
 	@Override
 	protected Room newRoom(String roomId) {
 		return new BroadCastWithHistoryRoom(100);

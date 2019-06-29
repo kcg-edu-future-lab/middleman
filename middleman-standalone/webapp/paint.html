@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta encoding="utf-8">
+<link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<style>
+body {
+  padding-top: 40px;
+  padding-bottom: 30px;
+}
+#log {
+    padding:5px;
+    border:solid 1px #000;
+    width:460px;
+    height:150px;
+    overflow:auto;
+}
+#canvas{
+  border: solid 1px;
+}
+</style>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<script src="middleman.js"></script>
+</head>
+<body>
+
+<canvas id="canvas" width="640" height="480"></canvas>
+
+<script>
+$(function(){
+	var service = "simplePaint";
+	var room = "2oir094";
+	var ws = Middleman.connect(service, room);
+	var context = $("#canvas")[0].getContext('2d');
+	ws.onopen = function(){
+	};
+	ws.onmessage = function (e) {
+		var msg = JSON.parse(e.data);
+		if(msg.type == "draw"){
+			context.beginPath();
+			context.arc(msg.x, msg.y, 2, 0, Math.PI*2, true);
+			context.fill();
+		}
+	};
+
+	var dragging = false;
+
+	$("#canvas").mousedown(function(e){
+		dragging = true;
+	}).mouseup(function(e){
+		dragging = false;
+	}).mousemove(function(e){
+		if(dragging){
+			ws.send(JSON.stringify({
+				type: "draw",
+				x: e.offsetX, y: e.offsetY
+			}));
+		}
+	});
+});
+</script>
+</body>
+</html>
