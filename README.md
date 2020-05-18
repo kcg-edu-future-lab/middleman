@@ -7,10 +7,11 @@ Javaで実装されたWebSocket用汎用セッションサーバです．同じ�
 
 ## 起動方法
 
-このリポジトリをcloneし，Eclipseにimportして，Eclipse内からWebアプリケーションとして起動して下さい．
-起動後， http://localhost:8080/middleman/ にブラウザでアクセスすると，簡単なチャットサンプルが表示されます．
+このリポジトリをcloneし，Eclipseにimportして，middleman-webappプロジェクトをEclipse内からWebアプリケーションとして起動して下さい．
+起動後， http://localhost:8080/middleman-webapp/ にブラウザでアクセスすると，簡単なチャットサンプルが表示されます．
 
-## 利用方法(JavaScript)
+
+## 利用方法(JavaScript, WebSocket利用)
 
 JavaScriptに標準で用意されているWebSocketクラスを使います．
 ```
@@ -32,6 +33,73 @@ ws.onopen = function(){
 	ws.send("hello");
 };
 ```
+
+
+## 利用方法(JavaScript, middleman.js使用)
+
+まず、共有したい処理をメソッドに切り出す形で、作成してください。以下は、マウスドラッグで点を書くだけの簡単なクラスです。
+
+```JavaScript
+<canvas id="canvas" width="640" height="480"></canvas>
+<script>
+class DrawCanvas{
+	constructor(canvas){
+		this.ctx = canvas.getContext("2d");
+		canvas.addEventListener("mousedown", e => {
+			this.dragging = true;
+		});
+		canvas.addEventListener("mouseup", e => {
+			this.dragging = false;
+		});
+		canvas.addEventListener("mousemove", e => {
+			if(this.dragging){
+				this.draw(e.offsetX, e.offsetY);
+			}
+		});
+	}
+
+	draw(x, y){
+		this.ctx.beginPath();
+		this.ctx.arc(x, y, 2, 0, Math.PI*2, true);
+		this.ctx.fill();
+	}
+}
+
+window.addEventListener('load', () => {
+	const canvas = new DrawCanvas(document.querySelector("#canvas"));
+});
+```
+
+次に、middleman.jsを読み込んでください。(headタグ内に追加)
+
+```html
+<script src="middleman.js"></script>
+```
+
+次に、load処理に，Middlemanの作成と共有する処理の登録を行うコードを追加してください。
+
+```JavaScript
+window.addEventListener('load', () => {
+	const canvas = new DrawCanvas(document.querySelector("#canvas"));
+
+	// ここから追加
+	const service = "simplePaint";
+	const room = "2oir094";
+	const m = new Middleman(service, room);
+
+	const canvas = new DrawCanvas(document.querySelector("#canvas"));
+	canvas.draw = m.proxy(canvas.draw.bind(canvas));
+});
+```
+
+serviceとroomから、接続URLが作成されます。上記だと，
+
+```
+https://host:port/context/simplePaint/2oir094
+```
+
+というURLに対してWebSocketでの接続が行われます。
+
 
 ## アーキテクチャ
 

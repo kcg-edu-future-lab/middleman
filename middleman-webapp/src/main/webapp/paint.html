@@ -2,31 +2,19 @@
 <html lang="ja">
 <head>
 <meta encoding="utf-8">
-<link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 <style>
 body {
-  padding-top: 40px;
-  padding-bottom: 30px;
-}
-#log {
-    padding:5px;
-    border:solid 1px #000;
-    width:460px;
-    height:150px;
-    overflow:auto;
+  padding: 10px;
 }
 #canvas{
   border: solid 1px;
 }
 </style>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 <script src="middleman.js"></script>
 </head>
 <body>
 
 <canvas id="canvas" width="640" height="480"></canvas>
-
 <script>
 class DrawCanvas{
 	constructor(canvas){
@@ -51,12 +39,12 @@ class DrawCanvas{
 	}
 }
 
-$(function(){
+window.addEventListener('load', () => {
+	const canvas = new DrawCanvas(document.querySelector("#canvas"));
+
 	const service = "simplePaint";
 	const room = "2oir094";
 	const m = new Middleman(service, room);
-
-	const canvas = new DrawCanvas(document.querySelector("#canvas"));
 	canvas.draw = m.proxy(canvas.draw.bind(canvas));
 });
 </script>
