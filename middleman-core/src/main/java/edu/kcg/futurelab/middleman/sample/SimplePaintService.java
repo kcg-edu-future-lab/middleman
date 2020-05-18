@@ -15,6 +15,9 @@
  */
 package edu.kcg.futurelab.middleman.sample;
 
+import javax.websocket.OnMessage;
+import javax.websocket.Session;
+import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 
 import edu.kcg.futurelab.middleman.DefaultService;
@@ -23,6 +26,12 @@ import edu.kcg.futurelab.middleman.room.BroadCastWithHistoryRoom;
 
 @ServerEndpoint("/simplePaint/{roomId}")
 public class SimplePaintService extends DefaultService{
+	@OnMessage(maxMessageSize = 8192*1024)
+	public void onMessage(Session session, @PathParam("roomId") String roomId,
+			String message) {
+		super.onMessage(session, roomId, message);
+	}
+
 	@Override
 	protected Room newRoom(String roomId) {
 		return new BroadCastWithHistoryRoom(100);

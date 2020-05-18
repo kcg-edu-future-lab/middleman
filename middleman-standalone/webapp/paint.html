@@ -28,36 +28,36 @@ body {
 <canvas id="canvas" width="640" height="480"></canvas>
 
 <script>
+class DrawCanvas{
+	constructor(canvas){
+		this.ctx = canvas.getContext("2d");
+		canvas.addEventListener("mousedown", e => {
+			this.dragging = true;
+		});
+		canvas.addEventListener("mouseup", e => {
+			this.dragging = false;
+		});
+		canvas.addEventListener("mousemove", e => {
+			if(this.dragging){
+				this.draw(e.offsetX, e.offsetY);
+			}
+		});
+	}
+
+	draw(x, y){
+		this.ctx.beginPath();
+		this.ctx.arc(x, y, 2, 0, Math.PI*2, true);
+		this.ctx.fill();
+	}
+}
+
 $(function(){
-	var service = "simplePaint";
-	var room = "2oir094";
-	var ws = Middleman.connect(service, room);
-	var context = $("#canvas")[0].getContext('2d');
-	ws.onopen = function(){
-	};
-	ws.onmessage = function (e) {
-		var msg = JSON.parse(e.data);
-		if(msg.type == "draw"){
-			context.beginPath();
-			context.arc(msg.x, msg.y, 2, 0, Math.PI*2, true);
-			context.fill();
-		}
-	};
+	const service = "simplePaint";
+	const room = "2oir094";
+	const m = new Middleman(service, room);
 
-	var dragging = false;
-
-	$("#canvas").mousedown(function(e){
-		dragging = true;
-	}).mouseup(function(e){
-		dragging = false;
-	}).mousemove(function(e){
-		if(dragging){
-			ws.send(JSON.stringify({
-				type: "draw",
-				x: e.offsetX, y: e.offsetY
-			}));
-		}
-	});
+	const canvas = new DrawCanvas(document.querySelector("#canvas"));
+	canvas.draw = m.proxy(canvas.draw.bind(canvas));
 });
 </script>
 </body>

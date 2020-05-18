@@ -25,12 +25,19 @@ public class Main {
 
 		ServerContainer wscontainer =
 				WebSocketServerContainerInitializer.configureContext(context);
+		wscontainer.setDefaultMaxBinaryMessageBufferSize(8192*1024);
+		wscontainer.setDefaultMaxTextMessageBufferSize(8192*1024);
+		wscontainer.setDefaultMaxSessionIdleTimeout(1000 * 60 * 30);
 		wscontainer.addEndpoint(DefaultService.class);
 		wscontainer.addEndpoint(SimplePaintService.class);
 
 		Server server = new Server();
 		ServerConnector connector = new ServerConnector(server);
-		connector.setPort(8080);
+		int port = 8080;
+		if(args.length > 0) {
+			port = Integer.parseInt(args[0]);
+		}
+		connector.setPort(port);
 		server.addConnector(connector);
 		server.setHandler(context);
 		server.start();
