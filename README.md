@@ -87,7 +87,7 @@ window.addEventListener('load', () => {
 	const room = "2oir094";
 	const m = new Middleman(service, room);
 
-	canvas.draw = m.proxy(canvas.draw.bind(canvas));
+	canvas.draw = m.share(canvas.draw.bind(canvas));
 });
 ```
 

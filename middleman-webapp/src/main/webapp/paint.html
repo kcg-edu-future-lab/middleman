@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta encoding="utf-8">
+<meta charset="utf-8">
 <style>
 body {
   padding: 10px;
@@ -42,10 +42,32 @@ class DrawCanvas{
 window.addEventListener('load', () => {
 	const canvas = new DrawCanvas(document.querySelector("#canvas"));
 
-	const service = "simplePaint";
-	const room = "2oir094";
-	const m = new Middleman(service, room);
-	canvas.draw = m.proxy(canvas.draw.bind(canvas));
+	const ms = new Middleman("sessions/default/paint-2oir094");
+
+	// onopenは接続が確立されたときに呼び出される。send(type, body, headers)でメッセージを送れる。
+	ms.onopen = () =>{
+		console.log("接続されました.");
+		ms.send("hello", "こんにちは");
+	};
+
+	// メッセージのtype別に，ハンドラを登録できる。
+	ms.handlers["hello"] = m => {
+		console.log(m.message);
+	};
+
+	// handlerで定義されていないtypeの場合はonelseが呼び出される。
+	ms.onelse = m=>{
+	};
+
+	// メソッドを共有する。ms.shareは共有版のメソッドを返す。
+	// 共有版のメソッドは，呼び出されると，一旦サーバにメソッドI Dと
+	// 引数が送られ，サーバから全セッションに配られ，その後本来のメソッド
+	// が実行される。
+	canvas.draw = ms.share(canvas.draw.bind(canvas));
+	//ms.shareWithAll(canvas, 'draw');
+	//ms.shareWithOthers(id => {
+	// return {instance: canvas, methods: ['']};
+	//})
 });
 </script>
 </body>

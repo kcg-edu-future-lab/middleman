@@ -1,0 +1,12 @@
+version: "3.4"
+
+services:
+  middleman:
+    image: "openjdk:11"
+    restart: always
+    ports:
+      - 8083:8080
+    volumes:
+      - ./:/work
+    working_dir: /work
+    command: java -jar /work/middleman-standalone-0.0.1-SNAPSHOT-jar-with-dependencies.jar /middleman2

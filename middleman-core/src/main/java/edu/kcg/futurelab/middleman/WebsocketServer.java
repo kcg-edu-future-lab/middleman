@@ -25,38 +25,44 @@ import javax.websocket.Session;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 
-import edu.kcg.futurelab.middleman.room.DefaultRoom;
+import edu.kcg.futurelab.middleman.service.DefaultService;
 
-@ServerEndpoint("/sessions/default/{roomId}")
-public class DefaultService {
+@ServerEndpoint("/sessions/{serviceId}/{roomId}")
+public class WebsocketServer {
 	@OnOpen
-	public void onOpen(Session session,
+	public void onOpen(
+			Session session,
+			@PathParam("serviceId") String serviceId,
 			@PathParam("roomId") String roomId) {
-		getRoom(roomId).add(session);
+		getService(serviceId).onOpen(roomId, session);
 	}
 
 	@OnClose
-	public void onClose(Session session, @PathParam("roomId") String roomId) {
-		getRoom(roomId).remove(session);
-		groups.compute(roomId, (key, cur) -> {
-			if(cur.getSessionCount() == 0 && cur.canRemove()) return null;
-			return cur;
-		});
+	public void onClose(
+			Session session,
+			@PathParam("serviceId") String serviceId,
+			@PathParam("roomId") String roomId) {
+		if(getService(serviceId).onClose(roomId, session)) {
+			services.remove(serviceId);
+		}
 	}
 
-	@OnMessage
-	public void onMessage(Session session, @PathParam("roomId") String roomId,
+	@OnMessage(maxMessageSize = 8192*1024)
+	public void onMessage(
+			Session session,
+			@PathParam("serviceId") String serviceId,
+			@PathParam("roomId") String roomId,
 			String message) {
-		getRoom(roomId).onMessage(session, message);
+		getService(serviceId).onMessage(roomId, session, message);
 	}
 
-	protected Room getRoom(String roomId){
-		return groups.computeIfAbsent(roomId, this::newRoom);
+	protected Service getService(String serviceId){
+		return services.computeIfAbsent(serviceId, this::newService);
 	}
 
-	protected Room newRoom(String roomId){
-		return new DefaultRoom(roomId);
+	protected Service newService(String serviceId){
+		return new DefaultService(serviceId);
 	}
 
-	private static Map<String, Room> groups = new ConcurrentHashMap<>();
+	private static Map<String, Service> services = new ConcurrentHashMap<>();
 }

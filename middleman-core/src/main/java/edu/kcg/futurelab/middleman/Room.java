@@ -18,9 +18,7 @@ package edu.kcg.futurelab.middleman;
 import javax.websocket.Session;
 
 public interface Room {
-	boolean canRemove();
-	int getSessionCount();
-	void add(Session session);
-	void remove(Session session);
+	void onOpen(Session session);
+	boolean onClose(Session session);
 	void onMessage(Session sender, String message);
 }

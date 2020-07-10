@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.kcg.futurelab.middleman.room;
+package edu.kcg.futurelab.middleman.service;
 
 import java.io.IOException;
 import java.util.Deque;
@@ -30,12 +30,7 @@ public class BroadCastWithHistoryRoom extends BroadCastRoom{
 	}
 
 	@Override
-	public boolean canRemove(){
-		return false;
-	}
-
-	@Override
-	public synchronized void add(Session session) {
+	public synchronized void onOpen(Session session) {
 		try {
 			for(String m : log){
 				session.getBasicRemote().sendText(m);
@@ -43,7 +38,7 @@ public class BroadCastWithHistoryRoom extends BroadCastRoom{
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		super.add(session);
+		super.onOpen(session);
 	}
 
 	@Override

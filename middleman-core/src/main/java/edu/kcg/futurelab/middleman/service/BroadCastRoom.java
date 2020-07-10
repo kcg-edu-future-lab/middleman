@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.kcg.futurelab.middleman.room;
+package edu.kcg.futurelab.middleman.service;
 
 import java.io.IOException;
 import java.util.LinkedHashSet;
@@ -25,21 +25,16 @@ import edu.kcg.futurelab.middleman.Room;
 
 public class BroadCastRoom implements Room{
 	@Override
-	public boolean canRemove() {
-		return true;
-	}
-	@Override
-	public int getSessionCount() {
-		return sessions.size();
-	}
-	@Override
-	public synchronized void add(Session session) {
+	public synchronized void onOpen(Session session) {
 		sessions.add(session);
 	}
+
 	@Override
-	public synchronized void remove(Session session) {
+	public synchronized boolean onClose(Session session) {
 		sessions.remove(session);
+		return sessions.size() == 0;
 	}
+
 	@Override
 	public synchronized void onMessage(Session sender, String message) {
 		for(Session s : sessions){

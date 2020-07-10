@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.kcg.futurelab.middleman.room;
+package edu.kcg.futurelab.middleman.service;
 
 import java.io.File;
 import java.io.IOException;
@@ -35,31 +35,29 @@ public class DefaultRoom implements Room{
 	}
 
 	@Override
-	public boolean canRemove() {
-		return true;
-	}
-	@Override
-	public int getSessionCount() {
-		return sessions.size();
-	}
-	@Override
-	public synchronized void add(Session session) {
+	public synchronized void onOpen(Session session) {
 		sessions.add(session);
 		if(sessions.size() == 1) {
 			onRoomStarted();
 		}
 	}
+
 	@Override
-	public synchronized void remove(Session session) {
+	public synchronized boolean onClose(Session session) {
 		sessions.remove(session);
 		if(sessions.size() == 0) {
 			onRoomEnded();
+			return true;
 		}
+		return false;
 	}
+
 	@Override
-	public synchronized void onMessage(Session sender, String message) {
+	public synchronized void onMessage(Session session, String message) {
 		for(Session s : sessions){
 			try {
+				roomLog.printf(",%n{\"time\": %d, \"sender\": \"%s\", \"message\": %s}",
+						new Date().getTime(), session.getId(), message);
 				s.getBasicRemote().sendText(message);
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -72,17 +70,20 @@ public class DefaultRoom implements Room{
 		String dates = new SimpleDateFormat("yyyyMMdd").format(now);
 		String times = new SimpleDateFormat("HHmmss").format(now);
 		File dir = new File(new File("logs"), dates);
+		dir.mkdirs();
 		try {
 			File f = FileUtil.createUniqueFile(
 					dir,
-					getClass().getSimpleName() + "-" + roomId + "-" + times, ".json");
+					getClass().getSimpleName() + "-" + roomId + "-" + times + "-", ".json");
 			roomLog = new PrintWriter(Files.newBufferedWriter(f.toPath()));
+			roomLog.print("[{}");
 		} catch(IOException e) {
 			throw new RuntimeException(e);
 		}
 	}
 
 	private void onRoomEnded() {
+		roomLog.printf("%n]%n");
 		roomLog.close();
 	}
 

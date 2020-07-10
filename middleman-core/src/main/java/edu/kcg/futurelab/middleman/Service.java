@@ -13,19 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package edu.kcg.futurelab.middleman.sample;
+package edu.kcg.futurelab.middleman;
 
-import edu.kcg.futurelab.middleman.Room;
-import edu.kcg.futurelab.middleman.service.BroadCastWithHistoryRoom;
-import edu.kcg.futurelab.middleman.service.DefaultService;
+import javax.websocket.Session;
 
-public class SimpleChatService extends DefaultService{
-	public SimpleChatService(String serviceId) {
-		super(serviceId);
-	}
-
-	@Override
-	protected Room newRoom(String roomId) {
-		return new BroadCastWithHistoryRoom(500);
-	}
+public interface Service {
+	void onOpen(String roomId, Session session);
+	boolean onClose(String roomId, Session session);
+	void onMessage(String roomId, Session session, String message);
 }
