@@ -25,9 +25,9 @@ import javax.websocket.Session;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 
-import edu.kcg.futurelab.middleman.room.BroadCastRoom;
+import edu.kcg.futurelab.middleman.room.DefaultRoom;
 
-@ServerEndpoint("/default/{roomId}")
+@ServerEndpoint("/sessions/default/{roomId}")
 public class DefaultService {
 	@OnOpen
 	public void onOpen(Session session,
@@ -55,7 +55,7 @@ public class DefaultService {
 	}
 
 	protected Room newRoom(String roomId){
-		return new BroadCastRoom();
+		return new DefaultRoom(roomId);
 	}
 
 	private static Map<String, Room> groups = new ConcurrentHashMap<>();
