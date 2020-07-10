@@ -5,8 +5,8 @@ services:
     image: "openjdk:11"
     restart: always
     ports:
-      - 8083:8080
+      - 8084:8080
     volumes:
       - ./:/work
     working_dir: /work
-    command: java -jar /work/middleman-standalone-0.0.1-SNAPSHOT-jar-with-dependencies.jar /middleman2
+    command: java -jar /work/middleman-standalone-1.0.0-SNAPSHOT-jar-with-dependencies.jar 8080 /middleman2

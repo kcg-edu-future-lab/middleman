@@ -52,7 +52,7 @@ window.addEventListener('load', () => {
 
 	// メッセージのtype別に，ハンドラを登録できる。
 	ms.handlers["hello"] = m => {
-		console.log(m.message);
+		console.log(m);
 	};
 
 	// handlerで定義されていないtypeの場合はonelseが呼び出される。
