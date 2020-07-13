@@ -13,9 +13,10 @@ import edu.kcg.futurelab.middleman.WebsocketServer;
 
 public class Main {
 	public static void main(String[] args) throws Exception {
-		String contextPath = args.length > 0 ? args[0] : "/middleman1";
-		String webbappDir = args.length > 1 ? args[1] : "./webapp";
-		
+		int port = args.length > 0 ? Integer.parseInt(args[0]) : 8080;
+		String contextPath = args.length > 1 ? args[1] : "/middleman1";
+		String webbappDir = args.length > 2 ? args[2] : "./webapp";
+
 		ServletHolder holderHome = new ServletHolder("webapp", DefaultServlet.class);
 		holderHome.setInitParameter("resourceBase", webbappDir);
 		holderHome.setInitParameter("dirAllowed", "true");
@@ -34,10 +35,6 @@ public class Main {
 
 		Server server = new Server();
 		ServerConnector connector = new ServerConnector(server);
-		int port = 8080;
-		if(args.length > 0) {
-			port = Integer.parseInt(args[0]);
-		}
 		connector.setPort(port);
 		server.addConnector(connector);
 		server.setHandler(context);

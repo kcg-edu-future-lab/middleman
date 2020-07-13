@@ -26,6 +26,7 @@ import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 
 import edu.kcg.futurelab.middleman.service.DefaultService;
+import edu.kcg.futurelab.middleman.service.StandardService;
 
 @ServerEndpoint("/sessions/{serviceId}/{roomId}")
 public class WebsocketServer {
@@ -61,7 +62,10 @@ public class WebsocketServer {
 	}
 
 	protected Service newService(String serviceId){
-		return new DefaultService(serviceId);
+		switch(serviceId) {
+		case "standard": return new StandardService(serviceId);
+		default: return new DefaultService(serviceId);
+		}
 	}
 
 	private static Map<String, Service> services = new ConcurrentHashMap<>();

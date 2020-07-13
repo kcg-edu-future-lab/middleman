@@ -6,9 +6,12 @@ class Middleman{
 		this.sharedFunctions = [];
 		this.handlers = {};
 		this.ws.onopen = e => this.onopen(e);
-		this.ws.onclose = e => this.onclose(e);
-		this.ws.onmessage = e => this.onmessage(e);
+		this.ws.onclose = e => {
+			this.ws = null;
+			this.onclose(e);
+		}
 		this.ws.onerror = e => this.onerror(e);
+		this.ws.onmessage = e => this.onmessage(e);
 	}
 
 	onopen(_e){
@@ -43,10 +46,19 @@ class Middleman{
 				body: body}));
 	}
 
-	share(f){
+	share(f, option){
 		if(!this.ws) return f;
 		const index = this.sharedFunctions.length;
 		this.sharedFunctions.push(f);
+		if(option){
+			this.ws.send(JSON.stringify({
+				type: "invocationConfig",
+				body: {
+					index: index,
+					option: option
+				}
+			}));
+		}
 		const self = this;
 		return function(){
 			if(self.ws == null){

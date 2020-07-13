@@ -16,24 +16,34 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.12</version>
+      <version>[4.12,)</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.langrid</groupId>
       <artifactId>jp.go.nict.langrid.commons</artifactId>
-      <version>1.1.1</version>
+      <version>[1.1.1,)</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <version>[29.0-jre,)</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>[2.11.1,)</version>
     </dependency>
     <dependency>
       <groupId>javax.websocket</groupId>
       <artifactId>javax.websocket-api</artifactId>
-      <version>1.1</version>
+      <version>[1.1,)</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty.websocket</groupId>
       <artifactId>javax-websocket-client-impl</artifactId>
-      <version>9.4.29.v20200521</version>
+      <version>[9.4.29.v20200521,)</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
