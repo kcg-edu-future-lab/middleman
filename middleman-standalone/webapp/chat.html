@@ -47,12 +47,20 @@ body {
 <script>
 
 class Chat{
-	constructor(id){
-		this.id = id;
+	constructor(logId, userNameId, inputId){
+		this.logId = logId;
+		this.userNameId = userNameId;
+		this.inputId = inputId;
+		$(this.inputId).keypress(e => {
+			if(e.which != 13) return true;
+			this.chat($(userNameId).val() + ": " + $(this.inputId).val());
+			$(this.inputId).val("");
+			return false;
+		});
 	}
 	
 	chat(message){
-		const log = $(this.id);
+		const log = $(this.logId);
 		log.append(message + "<br />");
 		log.scrollTop(log[0].scrollHeight);
 		console.log(message);
@@ -60,14 +68,8 @@ class Chat{
 }
 $(function(){
 	const m = new Middleman("sessions/default/chat0000");
-	const chat = new Chat("#log");
+	const chat = new Chat("#log", "#userName", "#message");
 	chat.chat = m.share(chat.chat.bind(chat), {keep: "log", maxLog: 10000});
-	$("#message").keypress( function ( e ) {
-		if(e.which != 13) return true;
-		chat.chat($("#userName").val() + ": " + $("#message").val());
-		$("#message").val("");
-		return false;
-	});
 });
 </script>
 </body>

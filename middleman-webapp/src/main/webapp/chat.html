@@ -45,21 +45,31 @@ body {
 </div>
 
 <script>
+
+class Chat{
+	constructor(logId, userNameId, inputId){
+		this.logId = logId;
+		this.userNameId = userNameId;
+		this.inputId = inputId;
+		$(this.inputId).keypress(e => {
+			if(e.which != 13) return true;
+			this.chat($(userNameId).val() + ": " + $(this.inputId).val());
+			$(this.inputId).val("");
+			return false;
+		});
+	}
+	
+	chat(message){
+		const log = $(this.logId);
+		log.append(message + "<br />");
+		log.scrollTop(log[0].scrollHeight);
+		console.log(message);
+	}
+}
 $(function(){
-	var ws = Middleman.connect("simpleChat", "0000");
-	ws.onmessage = function (e) {
-		$("#log").append(e.data + "<br />");
-		$("#log").scrollTop( $("#log")[0].scrollHeight);
-		console.log(e.data);
-	};
-	ws.onopen = function(){
-	};
-	$("#message").keypress( function ( e ) {
-		if(e.which != 13) return true;
-		ws.send($("#userName").val() + ": " + $("#message").val());
-		$("#message").val("");
-		return false;
-	});
+	const m = new Middleman("sessions/default/chat0000");
+	const chat = new Chat("#log", "#userName", "#message");
+	chat.chat = m.share(chat.chat.bind(chat), {keep: "log", maxLog: 10000});
 });
 </script>
 </body>
