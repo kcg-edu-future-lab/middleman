@@ -69,7 +69,10 @@ class Chat{
 $(function(){
 	const m = new Middleman("sessions/default/chat0000");
 	const chat = new Chat("#log", "#userName", "#message");
-	chat.chat = m.share(chat.chat.bind(chat), {keep: "log", maxLog: 10000});
+	chat.chat = m.share(chat.chat.bind(chat));
+	
+	// -- 以下未実装 --
+	// 	chat.chat = m.share(chat.chat.bind(chat), {keep: "log", maxLog: 10000});
 });
 </script>
 </body>

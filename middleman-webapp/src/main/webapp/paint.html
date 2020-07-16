@@ -60,14 +60,19 @@ window.addEventListener('load', () => {
 	};
 
 	// メソッドを共有する。ms.shareは共有版のメソッドを返す。
-	// 共有版のメソッドは，呼び出されると，一旦サーバにメソッドI Dと
+	// 共有版のメソッドは，呼び出されると，一旦サーバにメソッドIDと
 	// 引数が送られ，サーバから全セッションに配られ，その後本来のメソッド
 	// が実行される。
 	canvas.draw = ms.share(canvas.draw.bind(canvas));
-	//ms.shareWithAll(canvas, 'draw');
-	//ms.shareWithOthers(id => {
-	// return {instance: canvas, methods: ['']};
-	//})
+
+
+	// -- 以下未実装 --
+	// ms.shareWithAll(canvas, 'draw');
+	// ms.shareWithOthers(id => {
+	//   return {instance: canvas, methods: ['']};
+	// });
+	// ms.shareObject(canvas, ['draw', 'selectTool']);
+	// ms.shareFuntion(canvas.draw.bind(canvas));
 });
 </script>
 </body>
