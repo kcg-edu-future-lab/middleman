@@ -15,7 +15,7 @@ Javaで実装されたWebSocket用汎用セッションサーバです．同じ�
 
 JavaScriptに標準で用意されているWebSocketクラスを使います．
 ```
-http://host:port/middleman/{serviceId}/{roomId}
+http://host:port/middleman-webapp/sessions/{serviceId}/{roomId}
 ```
 
 上記URLに接続すると，同じ{roomId}を使用しているクライアント間でメッセージが送受信できます．
@@ -25,7 +25,7 @@ http://host:port/middleman/{serviceId}/{roomId}
 
 ```JavaScript
 var roomId = "ljrfkjsldflsjfslj";
-var ws = new WebSocket("http://localhost:8080/middleman/default/" + roomId);
+var ws = new WebSocket("http://localhost:8080/middleman-webapp/sessions/default/" + roomId);
 ws.onmessage = function (e) {
 	console.log(e.data);
 };
@@ -37,22 +37,30 @@ ws.onopen = function(){
 
 ## 利用方法(JavaScript, middleman.js使用)
 
-まず、共有したい処理をメソッドに切り出す形で、作成してください。以下は、マウスドラッグで点を書くだけの簡単なクラスです。
+まず，middleman.jsを読み込んでください．(headタグ内に追加)
+
+```html
+<script src="middleman.js"></script>
+```
+
+次に，共有したい処理を，メソッドに切り出す形で作成してください．
+以下は，マウスドラッグで点を書くだけの簡単なクラスです．
 
 ```JavaScript
 <canvas id="canvas" width="640" height="480"></canvas>
 <script>
-class DrawCanvas{
+class Painter{
 	constructor(canvas){
 		this.ctx = canvas.getContext("2d");
+		this.drawing = false;
 		canvas.addEventListener("mousedown", e => {
-			this.dragging = true;
+			this.drawing = true;
 		});
 		canvas.addEventListener("mouseup", e => {
-			this.dragging = false;
+			this.drawing = false;
 		});
 		canvas.addEventListener("mousemove", e => {
-			if(this.dragging){
+			if(this.drawing){
 				this.draw(e.offsetX, e.offsetY);
 			}
 		});
@@ -66,38 +74,32 @@ class DrawCanvas{
 }
 
 window.addEventListener('load', () => {
-	const canvas = new DrawCanvas(document.querySelector("#canvas"));
+	const painter = new Painter(document.querySelector("#canvas"));
 });
 ```
 
-次に、middleman.jsを読み込んでください。(headタグ内に追加)
-
-```html
-<script src="middleman.js"></script>
-```
-
-次に、load処理に，Middlemanの作成と共有する処理の登録を行うコードを追加してください。
+次に，load処理に，Middlemanの作成と共有する処理の登録を行うコードを追加してください．
 
 ```JavaScript
 window.addEventListener('load', () => {
 	const canvas = new DrawCanvas(document.querySelector("#canvas"));
 
 	// ここから追加
-	const service = "simplePaint";
-	const room = "2oir094";
-	const m = new Middleman(service, room);
+	const roomId = "2oir094";
+	const m = new Middleman("sessions/default/" + roomId);
 
-	canvas.draw = m.share(canvas.draw.bind(canvas));
+	// 処理を共有
+	painter.draw = m.share(painter.draw.bind(painter));
 });
 ```
 
-serviceとroomから、接続URLが作成されます。上記だと，
+serviceとroomから，接続URLが作成されます．上記の場合，
 
 ```
-https://host:port/context/simplePaint/2oir094
+https://host:port/context/sessions/default/2oir094
 ```
 
-というURLに対してWebSocketでの接続が行われます。
+というURLに対してWebSocketでの接続が行われます．
 
 
 ## アーキテクチャ
@@ -109,29 +111,3 @@ middleman上に複数のサービスがあり，サービスは複数のルー�
 
 <img src="images/architecture.png" width="400">
 
-## サービスの開発
-
-JavaでWebSocketのサーバエンドポイントを実装すれば，新しいサービスを作ることができます．
-下記はサンプルとして含まれている共有キャンバス(SimplePaint)のサービスを実装したクラスです．
-
-```java
-@ServerEndpoint("/simplePaint/{roomId}")
-public class SimplePaintService extends DefaultService{
-//	@OnMessage
-//	public void onMessage(Session session, @PathParam("roomId") String roomId, String text) {
-//		super.onMessage(session, roomId, text);
-//	}
-
-	@Override
-	protected Room newRoom(String roomId) {
-		return new BroadCastWithHistoryRoom(100);
-	}
-}
-```
-
-DefaultServiceクラスは基本的なイベントハンドラ(onOpen,onClose,onMessage)を実装して，BroadCastRoomにイベントを通知するクラスです．
-これを継承してnewRoomメソッドをオーバーライドすると，内部で使用されるRoomクラスを変更できます．
-SimplePaintServiceでは，100件までのヒストリ付きの，かつブロードキャスト処理を実装したBroadCastWithHistoryRoomを作成しています．
-
-通常はRoomクラスを拡張して使用すればRoomの振る舞いを拡張できますが，上記のコメント部分のようにOnMessage等のWebSocketアノテーションを使用すると，
-直接セッションに関連する処理を拡張することもできます．

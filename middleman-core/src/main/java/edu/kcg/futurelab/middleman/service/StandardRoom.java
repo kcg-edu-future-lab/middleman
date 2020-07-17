@@ -22,6 +22,7 @@ import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
@@ -50,12 +51,19 @@ public class StandardRoom implements Room{
 		}
 		Basic b = session.getBasicRemote();
 		for(Collection<String> c : keepInvocations.values()) {
+			StringBuilder bu = new StringBuilder();
+			bu.append("{\"type\": \"bulk\", \"body\": [");
+			boolean first = true;
 			for(String m : c) {
-				try {
-					b.sendText(m);
-				} catch (IOException e) {
-					throw new RuntimeException(e);
-				}
+				if(first) first = false;
+				else bu.append(",");
+				bu.append(m);
+			}
+			bu.append("]}");
+			try {
+				b.sendText(bu.toString());
+			} catch (IOException e) {
+				throw new RuntimeException(e);
 			}
 		}
 	}
@@ -69,7 +77,7 @@ public class StandardRoom implements Room{
 		}
 		return false;
 	}
-	private Map<Integer, EvictingQueue<String>> keepInvocations;
+	private Map<Integer, EvictingQueue<String>> keepInvocations = new HashMap<>();
 	@Override
 	public synchronized void onMessage(Session session, String message) {
 		JsonNode n;
@@ -82,15 +90,16 @@ public class StandardRoom implements Room{
 		JsonNode body = n.get("body");
 		if(type.equals("invocationConfig")){
 			int targetIndex = body.get("index").asInt();
-			JsonNode option = n.get("option");
+			JsonNode option = body.get("option");
 			String keep = option.get("keep").asText();
 			if(keep.equals("log")) {
-				keepInvocations.put(targetIndex,
+				keepInvocations.putIfAbsent(targetIndex,
 						EvictingQueue.<String>create(option.get("maxLog").asInt(1000)));
 			}
 		} else if(type.equals("invocation")) {
 			int index = body.get("index").asInt();
-			keepInvocations.get(index).add(message);
+			EvictingQueue<String> q = keepInvocations.get(index);
+			if(q != null) q.add(message);
 		}
 		for(Session s : sessions){
 			try {

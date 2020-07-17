@@ -16,22 +16,22 @@ body {
 
 <canvas id="canvas" width="640" height="480"></canvas>
 <script>
-class DrawCanvas{
+class Painter{
 	constructor(canvas){
 		this.ctx = canvas.getContext("2d");
+		this.drawing = false;
 		canvas.addEventListener("mousedown", e => {
-			this.dragging = true;
+			this.drawing = true;
 		});
 		canvas.addEventListener("mouseup", e => {
-			this.dragging = false;
+			this.drawing = false;
 		});
 		canvas.addEventListener("mousemove", e => {
-			if(this.dragging){
+			if(this.drawing){
 				this.draw(e.offsetX, e.offsetY);
 			}
 		});
 	}
-
 	draw(x, y){
 		this.ctx.beginPath();
 		this.ctx.arc(x, y, 2, 0, Math.PI*2, true);
@@ -40,39 +40,9 @@ class DrawCanvas{
 }
 
 window.addEventListener('load', () => {
-	const canvas = new DrawCanvas(document.querySelector("#canvas"));
-
+	const painter = new Painter(document.querySelector("#canvas"));
 	const ms = new Middleman("sessions/default/paint-2oir094");
-
-	// onopenは接続が確立されたときに呼び出される。send(type, body, headers)でメッセージを送れる。
-	ms.onopen = () =>{
-		console.log("接続されました.");
-		ms.send("hello", "こんにちは");
-	};
-
-	// メッセージのtype別に，ハンドラを登録できる。
-	ms.handlers["hello"] = m => {
-		console.log(m);
-	};
-
-	// handlerで定義されていないtypeの場合はonelseが呼び出される。
-	ms.onelse = m=>{
-	};
-
-	// メソッドを共有する。ms.shareは共有版のメソッドを返す。
-	// 共有版のメソッドは，呼び出されると，一旦サーバにメソッドIDと
-	// 引数が送られ，サーバから全セッションに配られ，その後本来のメソッド
-	// が実行される。
-	canvas.draw = ms.share(canvas.draw.bind(canvas));
-
-
-	// -- 以下未実装 --
-	// ms.shareWithAll(canvas, 'draw');
-	// ms.shareWithOthers(id => {
-	//   return {instance: canvas, methods: ['']};
-	// });
-	// ms.shareObject(canvas, ['draw', 'selectTool']);
-	// ms.shareFuntion(canvas.draw.bind(canvas));
+	painter.draw = ms.share(painter.draw.bind(painter));
 });
 </script>
 </body>
