@@ -30,9 +30,9 @@ public class BroadCastRoom implements Room{
 	}
 
 	@Override
-	public synchronized boolean onClose(Session session) {
+	public synchronized long onClose(Session session) {
 		sessions.remove(session);
-		return sessions.size() == 0;
+		return sessions.size() == 0 ? 0 : -1;
 	}
 
 	@Override

@@ -15,8 +15,12 @@
  */
 package edu.kcg.futurelab.middleman.service;
 
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import javax.websocket.Session;
 
@@ -26,7 +30,21 @@ import edu.kcg.futurelab.middleman.Service;
 public class DefaultService implements Service {
 	public DefaultService(String serviceId) {
 		this.serviceId = serviceId;
+		Executors.newScheduledThreadPool(1).scheduleAtFixedRate(() -> {
+			synchronized(roomTtls) {
+				Iterator<Map.Entry<String, Long>> it = roomTtls.entrySet().iterator();
+				long cur = System.currentTimeMillis();
+				while(it.hasNext()) {
+					Map.Entry<String, Long> e = it.next();
+					if(cur > e.getValue()) {
+						it.remove();
+						rooms.remove(e.getKey());
+					}
+				}
+			}
+		}, 10000, 10000, TimeUnit.MILLISECONDS);
 	}
+	private Map<String, Long> roomTtls = new HashMap<>();
 
 	public String getServiceId() {
 		return serviceId;
@@ -39,10 +57,13 @@ public class DefaultService implements Service {
 
 	@Override
 	public boolean onClose(String roomId, Session session) {
-		if(getRoom(roomId).onClose(session)) {
+		long ttl = getRoom(roomId).onClose(session);
+		if(ttl == 0) {
 			rooms.remove(roomId);
+		} else if(ttl > 0) {
+			roomTtls.put(roomId, System.currentTimeMillis() + ttl);
 		}
-		return rooms.size() == 0;
+		return false;
 	}
 
 	@Override

@@ -19,6 +19,11 @@ import javax.websocket.Session;
 
 public interface Room {
 	void onOpen(Session session);
-	boolean onClose(Session session);
+	/**
+	 * Room削除までの猶予をミリ秒で返す。-1の場合は可能な限り削除されない。
+	 * @param session
+	 * @return
+	 */
+	long onClose(Session session);
 	void onMessage(Session sender, String message);
 }

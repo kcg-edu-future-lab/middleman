@@ -83,13 +83,13 @@ public class StandardRoom implements Room{
 	}
 
 	@Override
-	public synchronized boolean onClose(Session session) {
+	public synchronized long onClose(Session session) {
 		sessions.remove(session);
 		if(sessions.size() == 0) {
 			onRoomEnded();
-			return true;
+			return 0;
 		}
-		return false;
+		return -1;
 	}
 	@Override
 	public synchronized void onMessage(Session session, String message) {
