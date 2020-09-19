@@ -23,6 +23,8 @@ import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
@@ -33,6 +35,8 @@ import javax.websocket.Session;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.EvictingQueue;
 
 import edu.kcg.futurelab.middleman.Room;
@@ -50,21 +54,31 @@ public class StandardRoom implements Room{
 			onRoomStarted();
 		}
 		Basic b = session.getBasicRemote();
-		for(Collection<String> c : keepInvocations.values()) {
-			StringBuilder bu = new StringBuilder();
-			bu.append("{\"type\": \"bulk\", \"body\": [");
-			boolean first = true;
-			for(String m : c) {
-				if(first) first = false;
-				else bu.append(",");
-				bu.append(m);
-			}
-			bu.append("]}");
-			try {
-				b.sendText(bu.toString());
-			} catch (IOException e) {
-				throw new RuntimeException(e);
-			}
+
+		ObjectNode bulk = om.createObjectNode();
+		bulk.put("type", "bulk");
+		ArrayNode bbody = om.createArrayNode();
+		bulk.set("body", bbody);
+		// statesから状態を送信
+		System.out.println("states len: " + states.size());
+		for(Map.Entry<Integer, String> e : states.entrySet()) {
+			System.out.println("states added");
+			ObjectNode state = om.createObjectNode();
+			bbody.add(state);
+			state.put("type", "state");
+			ObjectNode sbody = om.createObjectNode();
+			state.set("body", sbody);
+			sbody.put("objectIndex", e.getKey());
+			sbody.put("state", e.getValue());
+		}
+		for(Collection<JsonNode> c : invocationLogs.values()) {
+			if(c.size() == 0) continue;
+			for(JsonNode n : c) bbody.add(n);
+		}
+		try {
+			b.sendText(bulk.toString());
+		} catch (IOException e) {
+			throw new RuntimeException(e);
 		}
 	}
 
@@ -77,7 +91,6 @@ public class StandardRoom implements Room{
 		}
 		return false;
 	}
-	private Map<Integer, EvictingQueue<String>> keepInvocations = new HashMap<>();
 	@Override
 	public synchronized void onMessage(Session session, String message) {
 		JsonNode n;
@@ -88,20 +101,59 @@ public class StandardRoom implements Room{
 		}
 		String type = n.get("type").asText();
 		JsonNode body = n.get("body");
-		if(type.equals("invocationConfig")){
-			int targetIndex = body.get("index").asInt();
-			JsonNode option = body.get("option");
-			String keep = option.get("keep").asText();
-			if(keep.equals("log")) {
-				keepInvocations.putIfAbsent(targetIndex,
-						EvictingQueue.<String>create(option.get("maxLog").asInt(1000)));
+		boolean bcast = true;
+		switch(type) {
+			default:
+			case "connectionConfig":{
+				System.out.println(message);
+				bcast = false;
+				break;
 			}
-		} else if(type.equals("invocation")) {
-			int index = body.get("index").asInt();
-			EvictingQueue<String> q = keepInvocations.get(index);
-			if(q != null) q.add(message);
+			case "objectConfig":{
+				System.out.println(message);
+				Iterator<JsonNode> it = body.get("methodIdexes").elements();
+				Set<Integer> idxs = new LinkedHashSet<>();
+				while(it.hasNext()) {
+					idxs.add(it.next().asInt());
+				}
+				objectMethods.put(body.get("objectIndex").asInt(), idxs);
+				bcast = false;
+				break;
+			}
+			case "methodConfig":{
+				System.out.println(message);
+				int targetIndex = body.get("index").asInt();
+				JsonNode option = body.get("option");
+				String keep = option.get("keep").asText();
+				if(keep.equals("log")) {
+					invocationLogs.putIfAbsent(targetIndex,
+							EvictingQueue.<JsonNode>create(option.get("maxLog").asInt(1000)));
+				}
+				bcast = false;
+				break;
+			}
+			case "saveState": {
+				System.out.println(message);
+				int objIndex = body.get("objectIndex").asInt();
+				String state = body.get("state").asText();
+				states.put(objIndex, state);
+				System.out.println(objIndex);
+				System.out.println(state);
+				for(int mi : objectMethods.get(objIndex)) {
+					EvictingQueue<JsonNode> q = invocationLogs.get(mi);
+					if(q != null) q.clear();
+				}
+				bcast = false;
+				break;
+			}
+			case "invocation": {
+				int index = body.get("index").asInt();
+				EvictingQueue<JsonNode> q = invocationLogs.get(index);
+				if(q != null) q.add(n);
+				break;
+			}
 		}
-		for(Session s : sessions){
+		if(bcast) for(Session s : sessions){
 			try {
 				roomLog.printf(",%n{\"time\": %d, \"sender\": \"%s\", \"message\": %s}",
 						new Date().getTime(), session.getId(), message);
@@ -137,6 +189,10 @@ public class StandardRoom implements Room{
 	private String roomId;
 	private PrintWriter roomLog;
 	private ObjectMapper om = new ObjectMapper();
+
+	private Map<Integer, EvictingQueue<JsonNode>> invocationLogs = new HashMap<>();
+	private Map<Integer, String> states = new LinkedHashMap<>();
+	private Map<Integer, Set<Integer>> objectMethods = new HashMap<>();
 
 	private Set<Session> sessions = new LinkedHashSet<>();
 }
