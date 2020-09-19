@@ -25,18 +25,35 @@ import edu.kcg.futurelab.middleman.Room;
 
 public class BroadCastRoom implements Room{
 	@Override
-	public synchronized void onOpen(Session session) {
+	public void onRoomStarted() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onRoomEnded() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public boolean canRemove() {
+		return sessions.size() == 0;
+	}
+
+	@Override
+	public synchronized void onSessionOpen(Session session) {
 		sessions.add(session);
 	}
 
 	@Override
-	public synchronized long onClose(Session session) {
+	public synchronized long onSessionClose(Session session) {
 		sessions.remove(session);
 		return sessions.size() == 0 ? 0 : -1;
 	}
 
 	@Override
-	public synchronized void onMessage(Session sender, String message) {
+	public synchronized void onSessionMessage(Session sender, String message) {
 		for(Session s : sessions){
 			try {
 				s.getBasicRemote().sendText(message);

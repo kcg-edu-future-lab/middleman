@@ -18,12 +18,15 @@ package edu.kcg.futurelab.middleman;
 import javax.websocket.Session;
 
 public interface Room {
-	void onOpen(Session session);
+	void onSessionOpen(Session session);
 	/**
 	 * Room削除までの猶予をミリ秒で返す。-1の場合は可能な限り削除されない。
 	 * @param session
 	 * @return
 	 */
-	long onClose(Session session);
-	void onMessage(Session sender, String message);
+	long onSessionClose(Session session);
+	void onSessionMessage(Session sender, String message);
+	boolean canRemove();
+	void onRoomStarted();
+	void onRoomEnded();
 }

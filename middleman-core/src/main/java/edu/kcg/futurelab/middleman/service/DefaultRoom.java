@@ -33,27 +33,28 @@ public class DefaultRoom implements Room{
 	public DefaultRoom(String roomId) {
 		this.roomId = roomId;
 	}
-
+	
 	@Override
-	public synchronized void onOpen(Session session) {
-		sessions.add(session);
-		if(sessions.size() == 1) {
-			onRoomStarted();
-		}
+	public boolean canRemove() {
+		return sessions.size() == 0;
 	}
 
 	@Override
-	public synchronized long onClose(Session session) {
+	public synchronized void onSessionOpen(Session session) {
+		sessions.add(session);
+	}
+
+	@Override
+	public synchronized long onSessionClose(Session session) {
 		sessions.remove(session);
 		if(sessions.size() == 0) {
-			onRoomEnded();
 			return 0;
 		}
 		return -1;
 	}
 
 	@Override
-	public synchronized void onMessage(Session session, String message) {
+	public synchronized void onSessionMessage(Session session, String message) {
 		for(Session s : sessions){
 			try {
 				roomLog.printf(",%n{\"time\": %d, \"sender\": \"%s\", \"message\": %s}",
@@ -65,7 +66,7 @@ public class DefaultRoom implements Room{
 		}
 	}
 
-	private void onRoomStarted() {
+	public void onRoomStarted() {
 		Date now = new Date();
 		String dates = new SimpleDateFormat("yyyyMMdd").format(now);
 		String times = new SimpleDateFormat("HHmmss").format(now);
@@ -82,7 +83,7 @@ public class DefaultRoom implements Room{
 		}
 	}
 
-	private void onRoomEnded() {
+	public void onRoomEnded() {
 		roomLog.printf("%n]%n");
 		roomLog.close();
 	}

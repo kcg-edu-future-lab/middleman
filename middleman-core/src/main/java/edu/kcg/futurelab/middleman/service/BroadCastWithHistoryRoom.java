@@ -30,7 +30,7 @@ public class BroadCastWithHistoryRoom extends BroadCastRoom{
 	}
 
 	@Override
-	public synchronized void onOpen(Session session) {
+	public synchronized void onSessionOpen(Session session) {
 		try {
 			for(String m : log){
 				session.getBasicRemote().sendText(m);
@@ -38,14 +38,14 @@ public class BroadCastWithHistoryRoom extends BroadCastRoom{
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		super.onOpen(session);
+		super.onSessionOpen(session);
 	}
 
 	@Override
-	public synchronized void onMessage(Session sender, String message) {
+	public synchronized void onSessionMessage(Session sender, String message) {
 		if(log.size() == historySize) log.pollFirst();
 		log.offerLast(message);
-		super.onMessage(sender, message);
+		super.onSessionMessage(sender, message);
 	}
 
 	private Deque<String> log = new LinkedList<>();

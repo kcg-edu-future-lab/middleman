@@ -52,14 +52,14 @@ public class DefaultService implements Service {
 
 	@Override
 	public void onOpen(String roomId, Session session) {
-		getRoom(roomId).onOpen(session);
+		getRoom(roomId).onSessionOpen(session);
 	}
 
 	@Override
 	public boolean onClose(String roomId, Session session) {
-		long ttl = getRoom(roomId).onClose(session);
+		long ttl = getRoom(roomId).onSessionClose(session);
 		if(ttl == 0) {
-			rooms.remove(roomId);
+			rooms.remove(roomId).onRoomEnded();
 		} else if(ttl > 0) {
 			roomTtls.put(roomId, System.currentTimeMillis() + ttl);
 		}
@@ -68,7 +68,7 @@ public class DefaultService implements Service {
 
 	@Override
 	public void onMessage(String roomId, Session session, String message) {
-		getRoom(roomId).onMessage(session, message);
+		getRoom(roomId).onSessionMessage(session, message);
 	}
 
 	protected Room getRoom(String roomId){
@@ -76,7 +76,9 @@ public class DefaultService implements Service {
 	}
 
 	protected Room newRoom(String roomId){
-		return new DefaultRoom(roomId);
+		Room r = new DefaultRoom(roomId);
+		r.onRoomStarted();
+		return r;
 	}
 
 	private String serviceId;

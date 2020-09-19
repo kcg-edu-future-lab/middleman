@@ -87,7 +87,7 @@ public class StandardRoom implements Room{
 		sessions.remove(session);
 		if(sessions.size() == 0) {
 			onRoomEnded();
-			return 0;
+			return 10 * 60 * 1000;
 		}
 		return -1;
 	}
