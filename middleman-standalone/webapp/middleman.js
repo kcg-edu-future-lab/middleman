@@ -103,16 +103,18 @@ class Middleman{
 		if(!this.ws) return f;
 		const index = this.sharedFunctions.length;
 		this.sharedFunctions.push(f);
-		if(option){
-			this.methodConfigs.push({
-				type: "methodConfig",
-				body: {
-					index: index,
-					option: option
-				}
-			});
-			this.sendConfigs();
+		if(option == null){
+			option = {keep: "log", maxLog: 1000};
 		}
+		this.methodConfigs.push({
+			type: "methodConfig",
+			body: {
+				index: index,
+				option: option
+			}
+		});
+		this.sendConfigs();
+
 		const self = this;
 		return function(){
 			if(self.ws == null){
