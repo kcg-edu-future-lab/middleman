@@ -45,6 +45,11 @@ body {
 </div>
 
 <script>
+$(function(){
+	const chat = new Chat("#log", "#userName", "#message");
+	const m = new Middleman("sessions/default/chat0000");
+	chat.chat = m.share(chat.chat.bind(chat));
+});
 
 class Chat{
 	constructor(logId, userNameId, inputId){
@@ -66,11 +71,6 @@ class Chat{
 		console.log(message);
 	}
 }
-$(function(){
-	const m = new Middleman("sessions/default/chat0000");
-	const chat = new Chat("#log", "#userName", "#message");
-	chat.chat = m.share(chat.chat.bind(chat));
-});
 </script>
 </body>
 </html>

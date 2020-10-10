@@ -16,6 +16,12 @@ body {
 
 <canvas id="canvas" width="640" height="480"></canvas>
 <script>
+window.addEventListener('load', () => {
+	const painter = new Painter(document.querySelector("#canvas"));
+	const ms = new Middleman("sessions/standard/paint-2oir094");
+	ms.shareObject(painter, [painter.draw]);
+});
+
 class Painter{
 	constructor(canvas){
 		this.canvas = canvas;
@@ -49,14 +55,6 @@ class Painter{
 		img.src = state;
 	}
 }
-
-window.addEventListener('load', () => {
-	const painter = new Painter(document.querySelector("#canvas"));
-	const ms = new Middleman("sessions/standard/paint-2oir094");
-	//painter.draw = ms.share(painter.draw.bind(painter));
-	ms.shareObject(painter, [painter.draw]);
-});
-
 </script>
 </body>
 </html>

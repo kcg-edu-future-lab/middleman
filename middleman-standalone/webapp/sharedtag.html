@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf8">
+<style>
+#sticky-note-container {
+  height: 400px;
+}
+.note {
+  background-color: aliceblue;
+  padding: 10px;
+  cursor: pointer;
+  width: 160px;
+}
+.note > input[type="text"] {
+  width: 90%;
+  height: 5rem;
+}
+</style>
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+<script src="autosize.min.js"></script>
+<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<script src="https://freewalk0.langrid.org/middleman2/middleman.js"></script>
+</head>
+<body>
+
+<div id="controller">
+    <input type="button" id="add-button" value="追加">
+</div>
+<div id="sticky-note-container">
+</div>
+
+<script>
+$(() => {
+    const tm = new TagManager('#sticky-note-container', '#add-button');
+    const ms = new Middleman("sessions/default/lkj3o4ijalskfj");
+    tm.create = ms.share(tm.create.bind(tm));
+    tm.onTagCreated = tag => {
+        tag.setText = ms.share(tag.setText.bind(tag));
+        tag.setPosition = ms.share(tag.setPosition.bind(tag));
+        tag.setColor = ms.share(tag.setColor.bind(tag));
+        tag.remove = ms.share(tag.remove.bind(tag));
+    };
+});
+
+class TagManager{
+    constructor(container, createButton){
+        this.container = $(container);
+        $(createButton).on('click', ()=>{
+            this.create();
+        });
+    }
+    onTagCreated(tag){
+    }
+    create(){
+        this.onTagCreated(new Tag(this.container));
+    }
+}
+
+class Tag{
+    constructor(container){
+        this.$note = $(this.getNewNote());
+        this.appendFunctions(this.$note);
+        container.append(this.$note);
+    }
+    setPosition(pos){
+        if(this.moving) return;
+        this.$note.offset(pos);
+    }
+    setText(text){
+        const ta = this.$note.children("textarea");
+        if(ta.val() != text){
+            ta.val(text);
+        }
+    }
+    setColor(color){
+        this.$note.css('background-color', color);
+    }
+    remove(){
+        this.$note.remove();
+    }
+    appendFunctions($note) {
+        $note.draggable({
+            start: ()=>{
+                this.moving = true;
+            },
+            drag: ()=> {
+                this.setPosition($note.offset());
+            },
+            stop: ()=>{
+                this.moving = false;
+            }
+        });
+        $note.resizable();
+        autosize($note.find('.expanding'));
+        $note.children(".delete-button").on('click', e=>{
+            this.remove();
+        });
+        $note.children(".color-button").on('click', e=>{
+            const color = $(e.target).data('color');
+            this.setColor(color);
+        });
+        $note.children("textarea").on('change', e=>{
+            this.setText($(e.target).val());
+        });
+    }
+    getNewNote() {
+        return  '<div class="note">' + 
+            '<textarea class="expanding"></textarea>' +
+            '<input class="delete-button" type="button" value="削除">' +
+            '<input data-color="#e00020" class="color-button" type="button" value="赤">' +
+            '<input data-color="#e0ff20" class="color-button" type="button" value="黄">' +
+            '</div>';
+    }
+}
+</script>
+</body>
+</html>
