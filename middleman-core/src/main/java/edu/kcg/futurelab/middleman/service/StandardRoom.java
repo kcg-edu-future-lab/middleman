@@ -48,7 +48,12 @@ public class StandardRoom implements Room{
 	}
 
 	@Override
-	public synchronized void onOpen(Session session) {
+	public boolean canRemove() {
+		return sessions.size() == 0;
+	}
+
+	@Override
+	public synchronized void onSessionOpen(Session session) {
 		sessions.add(session);
 		if(sessions.size() == 1) {
 			onRoomStarted();
@@ -83,7 +88,7 @@ public class StandardRoom implements Room{
 	}
 
 	@Override
-	public synchronized long onClose(Session session) {
+	public synchronized long onSessionClose(Session session) {
 		sessions.remove(session);
 		if(sessions.size() == 0) {
 			onRoomEnded();
@@ -92,7 +97,7 @@ public class StandardRoom implements Room{
 		return -1;
 	}
 	@Override
-	public synchronized void onMessage(Session session, String message) {
+	public synchronized void onSessionMessage(Session session, String message) {
 		JsonNode n;
 		try {
 			n = om.readValue(message, JsonNode.class);
@@ -164,7 +169,7 @@ public class StandardRoom implements Room{
 		}
 	}
 
-	private void onRoomStarted() {
+	public void onRoomStarted() {
 		Date now = new Date();
 		String dates = new SimpleDateFormat("yyyyMMdd").format(now);
 		String times = new SimpleDateFormat("HHmmss").format(now);
@@ -181,7 +186,7 @@ public class StandardRoom implements Room{
 		}
 	}
 
-	private void onRoomEnded() {
+	public void onRoomEnded() {
 		roomLog.printf("%n]%n");
 		roomLog.close();
 	}
