@@ -9,7 +9,7 @@ class Middleman{
 		this.methodConfigs = [];
 		this.sharedObjects = [];
 		this.sharedFunctions = [];
-		this.changedObjects = {};
+		this.changedObjects = new Set();
 		this.handlers = {};
 
 		const p = document.querySelector("script[src$='middleman.js']").src.split("\/", 5);
@@ -102,10 +102,13 @@ class Middleman{
 	share(f, option, objectIndex){
 		if(!this.ws) return f;
 		const index = this.sharedFunctions.length;
-		this.sharedFunctions.push(f);
-		if(option == null){
-			option = {keep: "log", maxLog: 1000};
+
+		if(option == null) option = {};
+		if(!option["keep"]){
+			option["keep"] = "log";
+			option["maxLog"] = 1000;
 		}
+		const type = option["type"];
 		this.methodConfigs.push({
 			type: "methodConfig",
 			body: {
@@ -115,11 +118,13 @@ class Middleman{
 		});
 		this.sendConfigs();
 
+		this.sharedFunctions.push(f);
 		const self = this;
 		return function(){
 			if(self.ws == null){
 				if(f) f.apply(null, arguments);
 			} else{
+				if(type == "execAndSend") f.apply(null, arguments);
 				self.ws.send(JSON.stringify({
 					type: "invocation",
 					body: {
@@ -132,17 +137,22 @@ class Middleman{
 		};
 	}
 
-	shareObject(obj, methods){
+	shareObject(obj, methods, config){
 		if(!this.ws) return;
 		const objectIndex = this.sharedObjects.length;
 		const methodIndexes = [];
 		this.sharedObjects.push(obj);
+		const hasStateMethod =
+			typeof obj.getState === 'function' &&
+			typeof obj.setState === 'function';
 		for(let m of methods){
 			methodIndexes.push(this.sharedFunctions.length);
-			const sm = this.share(m.bind(obj), null, objectIndex);
+			const mcExist = config && config["methods"] && config["methods"][m.name];
+			const sm = this.share(m.bind(obj), mcExist ? config["methods"][m.name] : null,
+				objectIndex);
 			const self = this;
 			obj[m.name] = function(){
-				self.changedObjects[objectIndex] = obj;
+				if(hasStateMethod) self.changedObjects.add(objectIndex);
 				sm.apply(null, arguments);
 			};
 		}
@@ -150,7 +160,8 @@ class Middleman{
 			type: "objectConfig",
 			body: {
 				objectIndex: objectIndex,
-				methodIdexes: methodIndexes
+				methodIdexes: methodIndexes,
+				config: config
 			}
 		});
 		this.sendConfigs();
@@ -166,6 +177,6 @@ class Middleman{
 				},
 			}));
 		}
-		this.changedObjects = {};
+		this.changedObjects.clear();
 	}
 }

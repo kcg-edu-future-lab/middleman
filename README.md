@@ -25,7 +25,7 @@ http://host:port/middleman-webapp/sessions/{serviceId}/{roomId}
 
 ```JavaScript
 var roomId = "ljrfkjsldflsjfslj";
-var ws = new WebSocket("http://localhost:8080/middleman-webapp/sessions/default/" + roomId);
+var ws = new WebSocket("http://localhost:8080/middleman/sessions/default/" + roomId);
 ws.onmessage = function (e) {
 	console.log(e.data);
 };
@@ -89,7 +89,7 @@ window.addEventListener('load', () => {
 	const m = new Middleman("sessions/default/" + roomId);
 
 	// 処理を共有
-	painter.draw = m.share(painter.draw.bind(painter));
+	m.shareObject(painter, [painter.draw]);
 });
 ```
 

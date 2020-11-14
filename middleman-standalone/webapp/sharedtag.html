@@ -3,8 +3,9 @@
 <head>
 <meta charset="utf8">
 <style>
-#sticky-note-container {
-  height: 400px;
+#container {
+  height: 340px;
+  border: solid;
 }
 .note {
   background-color: aliceblue;
@@ -21,82 +22,77 @@
 <script src="autosize.min.js"></script>
 <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
 <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-<script src="https://freewalk0.langrid.org/middleman2/middleman.js"></script>
+<script src="middleman.js"></script>
 </head>
 <body>
 
 <div id="controller">
-    <input type="button" id="add-button" value="追加">
+  <input type="button" id="addButton" value="付箋の追加">
 </div>
-<div id="sticky-note-container">
+<div id="container">
 </div>
 
 <script>
 $(() => {
-    const tm = new TagManager('#sticky-note-container', '#add-button');
-    const ms = new Middleman("sessions/default/lkj3o4ijalskfj");
-    tm.create = ms.share(tm.create.bind(tm));
-    tm.onTagCreated = tag => {
-        tag.setText = ms.share(tag.setText.bind(tag));
-        tag.setPosition = ms.share(tag.setPosition.bind(tag));
-        tag.setColor = ms.share(tag.setColor.bind(tag));
-        tag.remove = ms.share(tag.remove.bind(tag));
-    };
+	const tm = new TagManager('#container', '#addButton');
+	const m = new Middleman("sessions/standard/sharetag-lskfj");
+	m.shareObject(tm, [tm.create]);
+	tm.onTagCreated = tag => {
+		m.shareObject(tag, [tag.setText, tag.setPosition, tag.setColor, tag.remove]);
+	};
 });
 
 class TagManager{
-    constructor(container, createButton){
-        this.container = $(container);
-        $(createButton).on('click', ()=>{
-            this.create();
-        });
-    }
-    onTagCreated(tag){
-    }
-    create(){
-        this.onTagCreated(new Tag(this.container));
-    }
+	constructor(container, createButton){
+		this.container = $(container);
+		$(createButton).on('click', ()=>{
+			this.create();
+		});
+	}
+	onTagCreated(tag){
+	}
+	create(){
+		this.onTagCreated(new Tag(this.container));
+	}
 }
 
 class Tag{
-    constructor(container){
-        this.$note = $(this.getNewNote());
-        this.appendFunctions(this.$note);
-        container.append(this.$note);
-    }
-    setPosition(pos){
-        if(this.moving) return;
-        this.$note.offset(pos);
-    }
-    setText(text){
-        const ta = this.$note.children("textarea");
-        if(ta.val() != text){
-            ta.val(text);
-        }
-    }
-    setColor(color){
-        this.$note.css('background-color', color);
-    }
-    remove(){
-        this.$note.remove();
-    }
-    appendFunctions($note) {
-        $note.draggable({
-            start: ()=>{
-                this.moving = true;
-            },
-            drag: ()=> {
-                this.setPosition($note.offset());
-            },
-            stop: ()=>{
-                this.moving = false;
-            }
-        });
-        $note.resizable();
-        autosize($note.find('.expanding'));
-        $note.children(".delete-button").on('click', e=>{
-            this.remove();
-        });
+	constructor(container){
+		this.$note = $(this.getNewNote());
+		this.appendFunctions(this.$note);
+		container.append(this.$note);
+	}
+	setPosition(pos){
+		if(this.moving) return;
+		this.$note.offset(pos);
+	}
+	setText(text){
+		const ta = this.$note.children("textarea");
+		if(ta.val() != text) ta.val(text);
+	}
+	setColor(color){
+		this.$note.css('background-color', color);
+	}
+	remove(){
+		this.$note.remove();
+	}
+	appendFunctions($note) {
+		$note.draggable({
+			start: ()=>{
+				this.moving = true;
+			},
+			drag: ()=> {
+				this.setPosition($note.offset());
+			},
+			stop: ()=>{
+				this.moving = false;
+			}
+		});
+		$note.resizable();
+		autosize($note.find('.expanding'));
+		$note.children(".delete-button").on('click', e=>{
+			this.remove();
+		});
         $note.children(".color-button").on('click', e=>{
             const color = $(e.target).data('color');
             this.setColor(color);

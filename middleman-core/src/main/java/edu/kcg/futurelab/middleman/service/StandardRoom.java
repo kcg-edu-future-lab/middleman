@@ -23,6 +23,7 @@ import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -96,6 +97,10 @@ public class StandardRoom implements Room{
 		}
 		return -1;
 	}
+	
+	static enum CastType{
+		None, Sendback, Othercast, Broadcast
+	}
 	@Override
 	public synchronized void onSessionMessage(Session session, String message) {
 		JsonNode n;
@@ -106,27 +111,24 @@ public class StandardRoom implements Room{
 		}
 		String type = n.get("type").asText();
 		JsonNode body = n.get("body");
-		boolean bcast = true;
+		CastType ct = CastType.Broadcast;
 		switch(type) {
-			default:
 			case "connectionConfig":{
-				System.out.println(message);
-				bcast = false;
+				ct = CastType.None;
 				break;
 			}
 			case "objectConfig":{
-				System.out.println(message);
+				ct = CastType.None;
 				Iterator<JsonNode> it = body.get("methodIdexes").elements();
 				Set<Integer> idxs = new LinkedHashSet<>();
 				while(it.hasNext()) {
 					idxs.add(it.next().asInt());
 				}
 				objectMethods.put(body.get("objectIndex").asInt(), idxs);
-				bcast = false;
 				break;
 			}
 			case "methodConfig":{
-				System.out.println(message);
+				ct = CastType.None;
 				int targetIndex = body.get("index").asInt();
 				JsonNode option = body.get("option");
 				String keep = option.get("keep").asText();
@@ -134,37 +136,56 @@ public class StandardRoom implements Room{
 					invocationLogs.putIfAbsent(targetIndex,
 							EvictingQueue.<JsonNode>create(option.get("maxLog").asInt(1000)));
 				}
-				bcast = false;
+				if(option.get("type") != null) {
+					if(option.get("type").asText().equals("execAndSend")) {
+						execAndSendMethods.add(targetIndex);
+					}
+				}
 				break;
 			}
 			case "saveState": {
-				System.out.println(message);
+				ct = CastType.None;
 				int objIndex = body.get("objectIndex").asInt();
 				String state = body.get("state").asText();
 				states.put(objIndex, state);
-				System.out.println(objIndex);
-				System.out.println(state);
 				for(int mi : objectMethods.get(objIndex)) {
 					EvictingQueue<JsonNode> q = invocationLogs.get(mi);
 					if(q != null) q.clear();
 				}
-				bcast = false;
 				break;
 			}
 			case "invocation": {
 				int index = body.get("index").asInt();
 				EvictingQueue<JsonNode> q = invocationLogs.get(index);
 				if(q != null) q.add(n);
+				if(execAndSendMethods.contains(index)) {
+					ct = CastType.Othercast;
+				} else {
+					ct = CastType.Broadcast;
+				}
 				break;
 			}
+			default:
+				ct = CastType.Broadcast;
+				break;
 		}
-		if(bcast) for(Session s : sessions){
+		if(ct.equals(CastType.None)) return;
+		if(ct.equals(CastType.Sendback)) {
 			try {
-				roomLog.printf(",%n{\"time\": %d, \"sender\": \"%s\", \"message\": %s}",
-						new Date().getTime(), session.getId(), message);
-				s.getBasicRemote().sendText(message);
+				session.getBasicRemote().sendText(message);
 			} catch (IOException e) {
 				e.printStackTrace();
+			}
+		} else {
+			roomLog.printf(",%n{\"time\": %d, \"sender\": \"%s\", \"message\": %s}",
+					new Date().getTime(), session.getId(), message);
+			for(Session s : sessions){
+				if(ct.equals(CastType.Othercast) && session.getId().equals(s.getId())) continue;
+				try {
+					s.getBasicRemote().sendText(message);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 			}
 		}
 	}
@@ -198,6 +219,7 @@ public class StandardRoom implements Room{
 	private Map<Integer, EvictingQueue<JsonNode>> invocationLogs = new HashMap<>();
 	private Map<Integer, String> states = new LinkedHashMap<>();
 	private Map<Integer, Set<Integer>> objectMethods = new HashMap<>();
+	private Set<Integer> execAndSendMethods = new HashSet<>();
 
 	private Set<Session> sessions = new LinkedHashSet<>();
 }

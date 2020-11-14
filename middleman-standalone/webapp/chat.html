@@ -5,14 +5,14 @@
 <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 <style>
 body {
-  padding-top: 40px;
-  padding-bottom: 30px;
+  padding-top: 10px;
+  padding-bottom: 0px;
 }
 #log {
     padding:5px;
     border:solid 1px #000;
-    width:780px;
-    height:400px;
+    width: 100%;
+    min-height:200px;
     overflow:auto;
 }
 </style>
@@ -43,31 +43,26 @@ body {
     </div>
   </form>
 </div>
-
 <script>
 $(function(){
-	const chat = new Chat("#log", "#userName", "#message");
-	const m = new Middleman("sessions/default/chat0000");
-	chat.chat = m.share(chat.chat.bind(chat));
+	const c = new Chat("#userName", "#message", "#log");
+	const m = new Middleman("sessions/standard/chat0000");
+	m.shareObject(c, [c.chat]);
 });
 
 class Chat{
-	constructor(logId, userNameId, inputId){
-		this.logId = logId;
-		this.userNameId = userNameId;
-		this.inputId = inputId;
-		$(this.inputId).keypress(e => {
+	constructor(userNameId, inputId, logId){
+		this.log = $(logId);
+		$(inputId).keypress(e => {
 			if(e.which != 13) return true;
-			this.chat($(userNameId).val() + ": " + $(this.inputId).val());
-			$(this.inputId).val("");
+			this.chat($(userNameId).val() + ": " + $(inputId).val());
+			$(inputId).val("");
 			return false;
 		});
 	}
-	
 	chat(message){
-		const log = $(this.logId);
-		log.append(message + "<br />");
-		log.scrollTop(log[0].scrollHeight);
+		this.log.append(message + "<br />");
+		this.log.scrollTop(this.log[0].scrollHeight);
 		console.log(message);
 	}
 }

@@ -14,7 +14,7 @@ import edu.kcg.futurelab.middleman.WebsocketServer;
 public class Main {
 	public static void main(String[] args) throws Exception {
 		int port = args.length > 0 ? Integer.parseInt(args[0]) : 8080;
-		String contextPath = args.length > 1 ? args[1] : "/middleman1";
+		String contextPath = args.length > 1 ? args[1] : "/middleman";
 		String webbappDir = args.length > 2 ? args[2] : "./webapp";
 
 		ServletHolder holderHome = new ServletHolder("webapp", DefaultServlet.class);
