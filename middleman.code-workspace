@@ -2,7 +2,21 @@
 	"folders": [
 		{
 			"path": "."
+		},
+		{
+			"path": "middleman-core"
+		},
+		{
+			"path": "middleman-standalone"
+		},
+		{
+			"path": "middleman-webapp"
+		},
+		{
+			"path": "../middlemantest"
 		}
 	],
-	"settings": {}
+	"settings": {
+		"java.configuration.updateBuildConfiguration": "automatic"
+	}
 }
