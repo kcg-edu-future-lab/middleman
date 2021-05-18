@@ -180,9 +180,15 @@ public class StandardRoom implements Room{
 			roomLog.printf(",%n{\"time\": %d, \"sender\": \"%s\", \"message\": %s}",
 					new Date().getTime(), session.getId(), message);
 			for(Session s : sessions){
-				if(ct.equals(CastType.Othercast) && session.getId().equals(s.getId())) continue;
+				boolean sender = session.getId().equals(s.getId());
+				if(ct.equals(CastType.Othercast) && sender) continue;
 				try {
-					s.getBasicRemote().sendText(message);
+					if(sender){
+						((ObjectNode)n).put("self", true);
+						s.getBasicRemote().sendText(n.toString());
+					} else{
+						s.getBasicRemote().sendText(message);
+					}
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
