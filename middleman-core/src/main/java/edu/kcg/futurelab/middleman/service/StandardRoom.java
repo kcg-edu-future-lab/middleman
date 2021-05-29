@@ -61,16 +61,14 @@ public class StandardRoom implements Room{
 		}
 		Basic b = session.getBasicRemote();
 
-		ObjectNode bulk = om.createObjectNode();
-		bulk.put("type", "bulk");
-		ArrayNode bbody = om.createArrayNode();
-		bulk.set("body", bbody);
+		ObjectNode joined = om.createObjectNode();
+		joined.put("type", "joined");
+		ArrayNode jbody = om.createArrayNode();
+		joined.set("body", jbody);
 		// statesから状態を送信
-		System.out.println("states len: " + states.size());
 		for(Map.Entry<Integer, String> e : states.entrySet()) {
-			System.out.println("states added");
 			ObjectNode state = om.createObjectNode();
-			bbody.add(state);
+			jbody.add(state);
 			state.put("type", "state");
 			ObjectNode sbody = om.createObjectNode();
 			state.set("body", sbody);
@@ -79,10 +77,10 @@ public class StandardRoom implements Room{
 		}
 		for(Collection<JsonNode> c : invocationLogs.values()) {
 			if(c.size() == 0) continue;
-			for(JsonNode n : c) bbody.add(n);
+			for(JsonNode n : c) jbody.add(n);
 		}
 		try {
-			b.sendText(bulk.toString());
+			b.sendText(joined.toString());
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
